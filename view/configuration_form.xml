@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--The COPYRIGHT file at the top level of this repository
+contains the full copyright notices and license terms. -->
+<data>
+    <xpath expr="/form" position="inside">
+        <separator id="paypal" string="Paypal" colspan="4"/>
+        <label name="paypal_amount_field"/>
+        <field name="paypal_amount_field"/>
+        <label name="paypal_fee"/>
+        <field name="paypal_fee"/>
+        <label name="paypal_fee_account"/>
+        <field name="paypal_fee_account"/>
+        <newline/>
+    </xpath>
+</data>
