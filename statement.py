@@ -155,6 +155,5 @@ class Import(metaclass=PoolMeta):
                 line.lines = [move_line]
 
             lines.append(line)
-            line.save()
 
-        #Line.save(lines)
+        Line.save(lines)
