@@ -2,7 +2,7 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 import csv
-from StringIO import StringIO
+from io import StringIO
 from trytond.model import ModelSQL, fields
 from trytond.pool import Pool, PoolMeta
 from trytond.modules.company.model import CompanyValueMixin
@@ -45,8 +45,7 @@ paypal_fee_account = fields.Many2One('account.account', 'Paypal Fee Account',
         'invisible': Not(Bool(Eval('paypal_fee'))),
         })
 
-class Configuration:
-    __metaclass__ = PoolMeta
+class Configuration(metaclass=PoolMeta):
     __name__ = 'account.configuration'
     paypal_amount_field = fields.MultiValue(paypal_amount_field)
     paypal_fee = fields.MultiValue(paypal_fee)
@@ -69,9 +68,8 @@ class Configuration:
         return cls.multivalue_model('paypal_fee').default_paypal_fee()
 
 
-class ConfigurationPaypal(ModelSQL, CompanyValueMixin):
+class ConfigurationPaypal(ModelSQL, CompanyValueMixin, metaclass=PoolMeta):
     "Bank Statement Paypal Configuration"
-    __metaclass__ = PoolMeta
     __name__ = 'account.configuration.paypal'
     paypal_amount_field = paypal_amount_field
     paypal_fee = paypal_fee
@@ -86,9 +84,8 @@ class ConfigurationPaypal(ModelSQL, CompanyValueMixin):
         return False
 
 
-class ImportStart:
+class ImportStart(metaclass=PoolMeta):
     __name__ = 'account.bank.statement.import.start'
-    __metaclass__ = PoolMeta
 
     @classmethod
     def __setup__(cls):
@@ -97,9 +94,8 @@ class ImportStart:
             ('paypal-en', 'Paypal EN'), ('paypal-es', 'Paypal ES')]
 
 
-class Import:
+class Import(metaclass=PoolMeta):
     __name__ = 'account.bank.statement.import'
-    __metaclass__ = PoolMeta
 
     @classmethod
     def __setup__(cls):
@@ -119,11 +115,10 @@ class Import:
 
         config = Config(1)
 
-        csv_file = StringIO(
-            self.start.import_file.decode('utf-8-sig').encode('utf-8'))
+        csv_file = StringIO(self.start.import_file.decode('utf-8-sig'))
         try:
             reader = csv.DictReader(csv_file)
-        except csv.Error, e:
+        except csv.Error as e:
             self.raise_user_error('format_error', str(e))
 
         locale = self.start.type.split('-')[1]
@@ -153,12 +148,13 @@ class Import:
                 if not config.paypal_fee_account:
                     self.raise_user_error('no_paypal_fee_account')
                 move_line = MoveLine()
-                move_line.date = line.date
+                move_line.date = line.date.date()
                 move_line.amount = fee
                 move_line.account = config.paypal_fee_account
 
                 line.lines = [move_line]
 
             lines.append(line)
+            line.save()
 
-        Line.save(lines)
+        #Line.save(lines)

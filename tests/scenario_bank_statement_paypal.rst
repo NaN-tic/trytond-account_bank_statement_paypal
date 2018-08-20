@@ -18,8 +18,6 @@ Imports::
     ...     create_chart, get_accounts, create_tax
     >>> from trytond.modules.account_invoice.tests.tools import \
     ...     set_fiscalyear_invoice_sequences
-    >>> from trytond.modules.account_bank_statement_paypal.tests.tools \
-    ...     import read_file
     >>> today = datetime.date.today()
     >>> now = datetime.datetime.now()
 
@@ -99,7 +97,7 @@ Import paypal EN file::
 
     >>> paypal_file = os.path.join(os.path.dirname(__file__), 'paypal-en.csv')
     >>> wizard = Wizard('account.bank.statement.import', [statement])
-    >>> wizard.form.import_file = read_file(paypal_file)
+    >>> wizard.form.import_file = open(paypal_file, 'rb').read()
     >>> wizard.form.type = 'paypal-en'
     >>> wizard.form.confirm = True
     >>> wizard.execute('import_file')
@@ -129,7 +127,7 @@ Import paypal ES file::
 
     >>> paypal_file = os.path.join(os.path.dirname(__file__), 'paypal-es.csv')
     >>> wizard = Wizard('account.bank.statement.import', [statement])
-    >>> wizard.form.import_file = read_file(paypal_file)
+    >>> wizard.form.import_file = open(paypal_file, 'rb').read()
     >>> wizard.form.type = 'paypal-es'
     >>> wizard.form.confirm = True
     >>> wizard.execute('import_file')
