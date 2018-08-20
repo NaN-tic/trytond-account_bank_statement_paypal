@@ -153,7 +153,7 @@ class Import:
                 if not config.paypal_fee_account:
                     self.raise_user_error('no_paypal_fee_account')
                 move_line = MoveLine()
-                move_line.date = line.date
+                move_line.date = line.date.date()
                 move_line.amount = fee
                 move_line.account = config.paypal_fee_account
 
