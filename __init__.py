@@ -7,7 +7,6 @@ from . import statement
 def register():
     Pool.register(
         statement.Configuration,
-        statement.ConfigurationPaypal,
         statement.ImportStart,
         module='account_bank_statement_paypal', type_='model')
     Pool.register(

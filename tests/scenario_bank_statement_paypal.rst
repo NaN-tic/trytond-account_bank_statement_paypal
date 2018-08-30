@@ -10,34 +10,79 @@ Imports::
     >>> from decimal import Decimal
     >>> from operator import attrgetter
     >>> from proteus import config, Model, Wizard, Report
-    >>> from trytond.tests.tools import activate_modules
-    >>> from trytond.modules.currency.tests.tools import get_currency
-    >>> from trytond.modules.company.tests.tools import create_company, \
-    ...     get_company
-    >>> from trytond.modules.account.tests.tools import create_fiscalyear, \
-    ...     create_chart, get_accounts, create_tax
-    >>> from trytond.modules.account_invoice.tests.tools import \
-    ...     set_fiscalyear_invoice_sequences
     >>> from trytond.modules.account_bank_statement_paypal.tests.tools \
     ...     import read_file
+    >>> from trytond.modules.account.tests.tools import create_fiscalyear, \
+    ...     create_chart, get_accounts
     >>> today = datetime.date.today()
     >>> now = datetime.datetime.now()
 
+Create database::
+
+    >>> config = config.set_trytond()
+    >>> config.pool.test = True
+
 Activate account_bank_statement_paypal module::
 
-    >>> config = activate_modules('account_bank_statement_paypal')
+    >>> Module = Model.get('ir.module')
+    >>> account_invoice_module, = Module.find(
+    ...     [('name', '=', 'account_bank_statement_paypal')])
+    >>> account_invoice_module.click('install')
+    >>> Wizard('ir.module.install_upgrade').execute('upgrade')
 
 Create company::
 
-    >>> currency = get_currency('EUR')
-    >>> _ = create_company(currency=currency)
-    >>> company = get_company()
+    >>> Currency = Model.get('currency.currency')
+    >>> CurrencyRate = Model.get('currency.currency.rate')
+    >>> currencies = Currency.find([('code', '=', 'USD')])
+    >>> if not currencies:
+    ...     currency = Currency(name='US Dollar', symbol=u'$', code='USD',
+    ...         rounding=Decimal('0.01'), mon_grouping='[]',
+    ...         mon_decimal_point='.')
+    ...     currency.save()
+    ...     CurrencyRate(date=today + relativedelta(month=1, day=1),
+    ...         rate=Decimal('1.0'), currency=currency).save()
+    ... else:
+    ...     currency, = currencies
+    >>> Company = Model.get('company.company')
+    >>> Party = Model.get('party.party')
+    >>> company_config = Wizard('company.company.config')
+    >>> company_config.execute('company')
+    >>> company = company_config.form
+    >>> party = Party(name='Dunder Mifflin')
+    >>> party.save()
+    >>> company.party = party
+    >>> company.currency = currency
+    >>> company_config.execute('add')
+    >>> company, = Company.find([])
+
+Reload the context::
+
+    >>> User = Model.get('res.user')
+    >>> config._context = User.get_preferences(True, config.context)
 
 Create fiscal year::
 
-    >>> fiscalyear = set_fiscalyear_invoice_sequences(
-    ...     create_fiscalyear(company))
-    >>> fiscalyear.click('create_period')
+    >>> FiscalYear = Model.get('account.fiscalyear')
+    >>> Sequence = Model.get('ir.sequence')
+    >>> SequenceStrict = Model.get('ir.sequence.strict')
+    >>> fiscalyear = FiscalYear(name=str(today.year))
+    >>> fiscalyear.start_date = today + relativedelta(month=1, day=1)
+    >>> fiscalyear.end_date = today + relativedelta(month=12, day=31)
+    >>> fiscalyear.company = company
+    >>> post_move_seq = Sequence(name=str(today.year), code='account.move',
+    ...     company=company)
+    >>> post_move_seq.save()
+    >>> fiscalyear.post_move_sequence = post_move_seq
+    >>> invoice_seq = SequenceStrict(name=str(today.year),
+    ...     code='account.invoice', company=company)
+    >>> invoice_seq.save()
+    >>> fiscalyear.out_invoice_sequence = invoice_seq
+    >>> fiscalyear.in_invoice_sequence = invoice_seq
+    >>> fiscalyear.out_credit_note_sequence = invoice_seq
+    >>> fiscalyear.in_credit_note_sequence = invoice_seq
+    >>> fiscalyear.save()
+    >>> FiscalYear.create_period([fiscalyear.id], config.context)
 
 Create chart of accounts::
 
@@ -46,7 +91,7 @@ Create chart of accounts::
     >>> receivable = accounts['receivable']
     >>> revenue = accounts['revenue']
     >>> expense = accounts['expense']
-    >>> payable = accounts['payable']
+    >>> account_tax = accounts['tax']
     >>> cash = accounts['cash']
     >>> cash.bank_reconcile = True
     >>> cash.save()

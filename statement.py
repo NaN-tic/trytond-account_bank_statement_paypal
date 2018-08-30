@@ -5,11 +5,9 @@ import csv
 from StringIO import StringIO
 from trytond.model import ModelSQL, fields
 from trytond.pool import Pool, PoolMeta
-from trytond.modules.company.model import CompanyValueMixin
 from trytond.pyson import Eval, Bool, Not
 
-__all__ = ['Configuration', 'ConfigurationPaypal', 'Import',
-    'ImportStart']
+__all__ = ['Configuration', 'Import', 'ImportStart']
 
 locales = {
     'en': {
@@ -33,57 +31,29 @@ locales = {
         'thousands_separator': '.',
         }}
 
-paypal_amount_field = fields.Selection([
-            ('gross_field', 'Gross'),
-            ('net_field', 'Net'),
-            ], 'Field to import amount')
-paypal_fee = fields.Boolean('Import fee')
-paypal_fee_account = fields.Many2One('account.account', 'Paypal Fee Account',
-    domain=[('kind', '=', 'expense')],
-    states={
-        'required': Bool(Eval('paypal_fee')),
-        'invisible': Not(Bool(Eval('paypal_fee'))),
-        })
 
 class Configuration:
     __metaclass__ = PoolMeta
     __name__ = 'account.configuration'
-    paypal_amount_field = fields.MultiValue(paypal_amount_field)
-    paypal_fee = fields.MultiValue(paypal_fee)
-    paypal_fee_account = fields.MultiValue(paypal_fee_account)
+    paypal_amount_field = fields.Selection([
+                ('gross_field', 'Gross'),
+                ('net_field', 'Net'),
+                ], 'Field to import amount')
+    paypal_fee = fields.Boolean('Import fee')
+    paypal_fee_account = fields.Many2One('account.account', 'Paypal Fee Account',
+        domain=[('kind', '=', 'expense')],
+        states={
+            'required': Bool(Eval('paypal_fee')),
+            'invisible': Not(Bool(Eval('paypal_fee'))),
+            })
 
-    @classmethod
-    def multivalue_model(cls, field):
-        pool = Pool()
-        if field in ('paypal_amount_field', 'paypal_fee', 'paypal_fee_account'):
-            return pool.get('account.configuration.paypal')
-        return super(Configuration, cls).multivalue_model(field)
-
-    @classmethod
-    def default_paypal_amount_field(cls, **pattern):
-        return cls.multivalue_model(
-            'paypal_amount_field').default_paypal_amount_field()
-
-    @classmethod
-    def default_paypal_fee(cls, **pattern):
-        return cls.multivalue_model('paypal_fee').default_paypal_fee()
-
-
-class ConfigurationPaypal(ModelSQL, CompanyValueMixin):
-    "Bank Statement Paypal Configuration"
-    __metaclass__ = PoolMeta
-    __name__ = 'account.configuration.paypal'
-    paypal_amount_field = paypal_amount_field
-    paypal_fee = paypal_fee
-    paypal_fee_account = paypal_fee_account
-
-    @classmethod
-    def default_paypal_amount_field(cls):
+    @staticmethod
+    def default_paypal_amount_field():
         return 'net_field'
 
-    @classmethod
-    def default_paypal_fee(cls):
-        return False
+    @staticmethod
+    def default_paypal_fee():
+        return True
 
 
 class ImportStart:
