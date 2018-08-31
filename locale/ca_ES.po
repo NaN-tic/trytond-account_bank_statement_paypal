@@ -23,5 +23,9 @@ msgid "Import Paypal Fee."
 msgstr "Importa la quota de Paypal."
 
 msgctxt "selection:account.bank.statement.import.start,type:"
-msgid "Paypal"
-msgstr "Paypal"
+msgid "Paypal EN"
+msgstr "Paypal EN"
+
+msgctxt "selection:account.bank.statement.import.start,type:"
+msgid "Paypal ES"
+msgstr "Paypal ES"
