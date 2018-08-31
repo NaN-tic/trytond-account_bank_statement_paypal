@@ -6,6 +6,10 @@ msgctxt "error:account.bank.statement.import:"
 msgid "No Paypal Fee Account configured."
 msgstr "No hi ha compte de despeses de Paypal configurada. "
 
+msgctxt "field:account.configuration,paypal_fee:"
+msgid "Paypal Fee"
+msgstr "Paypal quota"
+
 msgctxt "field:account.configuration,paypal_fee_account:"
 msgid "Paypal Fee Account"
 msgstr "Compte de despeses de Paypal"
@@ -13,6 +17,10 @@ msgstr "Compte de despeses de Paypal"
 msgctxt "field:account.configuration.default_account,paypal_fee_account:"
 msgid "Paypal Fee Account"
 msgstr "Compte de despeses de Paypal"
+
+msgctxt "help:account.configuration,paypal_fee:"
+msgid "Import Paypal Fee."
+msgstr "Importa la quota de Paypal."
 
 msgctxt "selection:account.bank.statement.import.start,type:"
 msgid "Paypal"
