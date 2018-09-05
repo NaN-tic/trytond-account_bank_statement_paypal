@@ -72,8 +72,6 @@ Create Journal::
     >>> AccountJournal = Model.get('account.journal')
     >>> account_journal = AccountJournal(name='Statement',
     ...     type='cash',
-    ...     credit_account=cash,
-    ...     debit_account=cash,
     ...     sequence=sequence)
     >>> account_journal.save()
 
@@ -81,7 +79,7 @@ Create Statement Journal::
 
     >>> StatementJournal = Model.get('account.bank.statement.journal')
     >>> statement_journal = StatementJournal(name='Test',
-    ...     journal=account_journal, currency=company.currency)
+    ...     journal=account_journal, currency=company.currency, account=cash)
     >>> statement_journal.save()
 
 Create Bank Statement::
