@@ -7,6 +7,8 @@ from trytond.model import ModelSQL, fields
 from trytond.pool import Pool, PoolMeta
 from trytond.modules.company.model import CompanyValueMixin
 from trytond.pyson import Eval, Bool, Not
+from trytond.i18n import gettext
+from trytond.exceptions import UserError
 
 __all__ = ['Configuration', 'ConfigurationPaypal', 'Import',
     'ImportStart']
@@ -98,13 +100,6 @@ class ImportStart(metaclass=PoolMeta):
 class Import(metaclass=PoolMeta):
     __name__ = 'account.bank.statement.import'
 
-    @classmethod
-    def __setup__(cls):
-        super(Import, cls).__setup__()
-        cls._error_messages.update({
-                'no_paypal_fee_account': ('No Paypal Fee Account configured.'),
-                })
-
     def process(self, statement):
         super(Import, self).process(statement)
         if self.start.type not in ['paypal-en', 'paypal-es']:
@@ -120,7 +115,8 @@ class Import(metaclass=PoolMeta):
         try:
             reader = csv.DictReader(csv_file)
         except csv.Error as e:
-            self.raise_user_error('format_error', str(e))
+            raise UserError(gettext('account_bank_statement.format_error',
+                error=str(e)))
 
         locale = self.start.type.split('-')[1]
         lines = []
@@ -147,7 +143,8 @@ class Import(metaclass=PoolMeta):
                 )
             if fee and config.paypal_fee:
                 if not config.paypal_fee_account:
-                    self.raise_user_error('no_paypal_fee_account')
+                    raise UserError(gettext(
+                        'account_bank_statement_paypal.no_paypal_fee_account'))
                 move_line = MoveLine()
                 move_line.date = line.date.date()
                 move_line.amount = fee
