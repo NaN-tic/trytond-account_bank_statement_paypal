@@ -42,7 +42,7 @@ paypal_amount_field = fields.Selection([
 paypal_fee = fields.Boolean('Paypal Fee',
     help="Import Paypal Fee.")
 paypal_fee_account = fields.Many2One('account.account', 'Paypal Fee Account',
-    domain=[('kind', '=', 'expense')],
+    domain=[('type.expense', '=', True)],
     states={
         'required': Bool(Eval('paypal_fee')),
         'invisible': Not(Bool(Eval('paypal_fee'))),
